@@ -1,0 +1,43 @@
+{
+  "id": "FAh7c3vYLSYgkGk3",
+  "name": "TODO — подсчёт просроченных задач",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "f392f811-2d0a-4589-bb02-ae7c903ca19a",
+      "name": "Ручной запуск",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:5001/api/tasks?done=false",
+        "options": {}
+      },
+      "id": "d1c9b242-0332-4d97-969c-44f877989f61",
+      "name": "Получить невыполненные задачи",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = $now.setZone('Europe/Moscow').toFormat('yyyy-MM-dd');\nconst tasks = $input.all().map(item => item.json).filter(task => task.done === false);\nconst overdue = tasks.filter(task => task.due && task.due < today);\nreturn [{ json: { date: today, pending: tasks.length, overdue: overdue.length } }];"
+      },
+      "id": "8d7c3934-e88e-43d1-87a4-71a79ba7f7f8",
+      "name": "Подсчитать просроченные",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 0]
+    }
+  ],
+  "connections": {
+    "Ручной запуск": { "main": [[{ "node": "Получить невыполненные задачи", "type": "main", "index": 0 }]] },
+    "Получить невыполненные задачи": { "main": [[{ "node": "Подсчитать просроченные", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false,
+  "pinData": {}
+}
